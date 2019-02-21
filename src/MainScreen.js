@@ -32,6 +32,7 @@ const initialState = {
   memorized: '',
   showValue: ShowValue.INPUT,
   operation: null,
+  lastOperationFunc: null,
   inputFontSize: DEFAULT_FONT_SIZE
 }
 
@@ -43,13 +44,13 @@ export default class MainScreen extends React.Component {
   onChangeSignPress = () => {
     const name = this.getShowValueName()
     const value = this.state[name]
-    this.setState({ [name]: value.startsWith('-') ? value.slice(1) : `-${value}` })
+    this.setState({ [name]: value.startsWith('-') ? value.slice(1) : `-${value}`, lastOperationFunc: null })
   }
 
   onPercentPress = () => {
     const name = this.getShowValueName()
     const value = this.state[name]
-    this.setState({ [name]: (parseFloat(value) * 0.01).toString() })
+    this.setState({ [name]: (parseFloat(value) * 0.01).toString(), lastOperationFunc: null })
   }
 
   onCommaPress = () => {
@@ -57,7 +58,8 @@ export default class MainScreen extends React.Component {
     input = input || '0'
     this.setState({
       input: input.includes('.') ? input : `${input}.`,
-      showValue: ShowValue.INPUT
+      showValue: ShowValue.INPUT,
+      lastOperationFunc: null
     })
   }
 
@@ -79,7 +81,7 @@ export default class MainScreen extends React.Component {
         newValue = `${input}${digit}`
         break
     }
-    this.setState({ input: newValue, showValue: ShowValue.INPUT })
+    this.setState({ input: newValue, showValue: ShowValue.INPUT, lastOperationFunc: null })
   }
 
   onOperationPress = (operation) => async () => {
@@ -94,19 +96,42 @@ export default class MainScreen extends React.Component {
       memorized: value,
       result: '',
       input: '',
-      showValue: ShowValue.MEMORIZED
+      showValue: ShowValue.MEMORIZED,
+      lastOperationFunc: null
     })
   }
 
   onResultPress = async () => {
-    let result
+    let operationFunc = null
     if (!this.state.memorized || !this.state.input) {
-      this.setState({ operation: null })
-      return
+      if (this.state.lastOperationFunc) {
+        operationFunc = this.state.lastOperationFunc
+      } else {
+        this.setState({ operation: null })
+        return
+      }
     }
-    const val1 = parseFloat(this.state.memorized)
+    const val1 = parseFloat(this.state.memorized || this.state.result)
     const val2 = parseFloat(this.state.input)
     const { operation } = this.state
+
+    operationFunc = operationFunc || this.getOperationFunc(operation, val2)
+
+    const result = operationFunc(val1)
+    return new Promise((resolve) => {
+      this.setState({
+        result: result.toString(),
+        input: '',
+        memorized: '',
+        showValue: ShowValue.RESULT,
+        operation: null,
+        lastOperationFunc: operationFunc // запоминаем последнюю операцию для реализации фичи нескольких нажатий "=" подряд
+      }, resolve)
+    })
+  }
+
+  getOperationFunc = (operation, val2) => (val1) => {
+    let result
     switch (operation) {
       case Operations.ADD:
         result = val1 + val2
@@ -121,15 +146,7 @@ export default class MainScreen extends React.Component {
         result = val1 / val2
         break
     }
-    return new Promise((resolve) => {
-      this.setState({
-        result: result.toString(),
-        input: '',
-        memorized: '',
-        showValue: ShowValue.RESULT,
-        operation: null
-      }, resolve)
-    })
+    return result
   }
 
   getShowValueName = () => {
