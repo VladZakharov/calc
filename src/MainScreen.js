@@ -165,7 +165,7 @@ export default class MainScreen extends React.Component {
     if (valueParts.length > 1) {
       result = `${result}.${valueParts[1]}`
     }
-    return result
+    return result.replace('- ', '-')
   }
 
   showValue = () => {
