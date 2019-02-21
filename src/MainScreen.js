@@ -100,13 +100,13 @@ export default class MainScreen extends React.Component {
 
   onResultPress = async () => {
     let result
-    const val1 = parseFloat(this.state.memorized)
-    const val2 = parseFloat(this.state.input)
-    const { operation } = this.state
-    if (!val1 || !val2) {
+    if (!this.state.memorized || !this.state.input) {
       this.setState({ operation: null })
       return
     }
+    const val1 = parseFloat(this.state.memorized)
+    const val2 = parseFloat(this.state.input)
+    const { operation } = this.state
     switch (operation) {
       case Operations.ADD:
         result = val1 + val2
