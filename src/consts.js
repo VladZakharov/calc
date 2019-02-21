@@ -7,6 +7,7 @@ export const BUTTON_MARGIN = BUTTON_SIZE / 5
 export const MAX_INPUT_LENGTH = 15
 export const INPUT_HORIZONTAL_MARGIN = 30
 export const DEFAULT_FONT_SIZE = 70
+export const CALC_ACCURACY = Math.pow(10, 10)
 
 export const Colors = {
   ORANGE: 'orange',

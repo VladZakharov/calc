@@ -1,6 +1,13 @@
 import React from 'react'
 import { Dimensions, StyleSheet, Text, View } from 'react-native'
-import { BUTTON_MARGIN, Colors, DEFAULT_FONT_SIZE, INPUT_HORIZONTAL_MARGIN, MAX_INPUT_LENGTH } from './consts'
+import {
+  BUTTON_MARGIN,
+  CALC_ACCURACY,
+  Colors,
+  DEFAULT_FONT_SIZE,
+  INPUT_HORIZONTAL_MARGIN,
+  MAX_INPUT_LENGTH
+} from './consts'
 import { Button } from './components/Button'
 
 const { width } = Dimensions.get('window')
@@ -170,7 +177,8 @@ export default class MainScreen extends React.Component {
 
   showValue = () => {
     const name = this.getShowValueName()
-    const value = this.state[name]
+    let value = this.state[name]
+    value = (Math.ceil(parseFloat(value) * CALC_ACCURACY) / CALC_ACCURACY).toString()
     return this.beautifyValue(value).replace('.', ',')
   }
 
